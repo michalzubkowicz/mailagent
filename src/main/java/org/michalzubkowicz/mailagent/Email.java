@@ -50,7 +50,7 @@ public class Email {
         if(Boolean.valueOf((String) properties.get("mail.smtp.auth"))) {
             final String username = (String) properties.get("mail.smtp.user");
             final String password = (String) properties.get("mail.smtp.password");
-            session = Session.getDefaultInstance(properties,
+            session = Session.getInstance(properties,
                     new Authenticator() {
                         protected PasswordAuthentication getPasswordAuthentication() {
                             return new PasswordAuthentication(username, password);
