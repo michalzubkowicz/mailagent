@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014. Michał Zubkowicz (michal.zubkowicz@gmail.com)
+ * Copyright (c) 2014. Robert Skubij <robert@skubij.pl>
  *
  * This file is part of some open source application.
  *
@@ -18,27 +18,65 @@
  *  *
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
  */
-
 package org.michalzubkowicz.mailagent;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertStoreException;
+import java.security.cert.CertificateException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.MessagingException;
 import javax.mail.Transport;
-import java.util.Properties;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
+import org.bouncycastle.mail.smime.SMIMEException;
+import org.michalzubkowicz.mailagent.tools.BouncySign;
 
 /**
- * Created by Michal Zubkowicz (michal.zubkowicz@gmail.com) on 01.07.14.
+ * Created by Robert Skubij <robert@skubij.pl> on 24.08.14.
  */
 public class SignedEmail extends Email {
 
-    public SignedEmail(Properties properties) {
+    private final BouncySign mailSigner;
+
+    public SignedEmail(Properties properties) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, InvalidAlgorithmParameterException, NoSuchProviderException, CertStoreException, SMIMEException {
+
         super(properties);
+
+        String key = properties.getProperty("bouncy-key");
+        String keyinstance = properties.getProperty("bouncy-keyinstance");
+        String password = properties.getProperty("bouncy-password");
+        String certalias = properties.getProperty("bouncy-certalias");
+
+        mailSigner = BouncySign.makeBouncy(key, password, keyinstance, certalias);
+
     }
 
-    public void send()  throws MessagingException {
-        message.setContent(multipart);
-        Transport.send(message);
+    @Override
+    public void send() throws MessagingException {
+
+        try {
+
+            MimeBodyPart bodyPartToSign = new MimeBodyPart();
+
+            bodyPartToSign.setContent(multipart);
+
+            MimeMultipart mp = mailSigner.getGenn().generate(bodyPartToSign, "BC");
+            
+            message.setContent(mp);
+
+            Transport.send(message);
+
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | SMIMEException ex) {
+            Logger.getLogger(SignedEmail.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
 }
-
-
