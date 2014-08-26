@@ -21,6 +21,7 @@
 
 package org.michalzubkowicz.mailagent;
 
+import org.bouncycastle.mail.smime.SMIMEException;
 import org.jsoup.Jsoup;
 
 import javax.activation.DataHandler;
@@ -36,6 +37,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Properties;
 
@@ -128,7 +130,7 @@ public class Email {
         }
     }
 
-    public void send(String to, String from, String subject, String htmlbody) throws MessagingException, IOException {
+    public void send(String to, String from, String subject, String htmlbody) throws MessagingException, NoSuchAlgorithmException, java.security.NoSuchProviderException, SMIMEException, IOException {
         this.setFrom(from);
         this.addTo(to);
         this.setSubject(subject);
@@ -136,7 +138,7 @@ public class Email {
         this.send();
     }
 
-    public void send(String to, String from, String subject, String htmlbody, List<String> attachmentList) throws MessagingException, IOException {
+    public void send(String to, String from, String subject, String htmlbody, List<String> attachmentList) throws MessagingException, NoSuchAlgorithmException, java.security.NoSuchProviderException, SMIMEException, IOException {
         this.setFrom(from);
         this.addTo(to);
         this.setSubject(subject);
@@ -145,7 +147,7 @@ public class Email {
         this.send();
     }
 
-    public void send()  throws MessagingException {
+    public void send()  throws MessagingException, NoSuchAlgorithmException, java.security.NoSuchProviderException, SMIMEException, IOException {
         message.setContent(multipart);
         Transport.send(message);
     }

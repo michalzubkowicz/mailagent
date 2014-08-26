@@ -20,23 +20,18 @@
  */
 package org.michalzubkowicz.mailagent;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertStoreException;
-import java.security.cert.CertificateException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.bouncycastle.mail.smime.SMIMEException;
+import org.michalzubkowicz.mailagent.tools.BouncySign;
+
 import javax.mail.MessagingException;
 import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
-import org.bouncycastle.mail.smime.SMIMEException;
-import org.michalzubkowicz.mailagent.tools.BouncySign;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertStoreException;
+import java.security.cert.CertificateException;
+import java.util.Properties;
 
 /**
  * Created by Robert Skubij <robert@skubij.pl> on 24.08.14.
@@ -59,24 +54,12 @@ public class SignedEmail extends Email {
     }
 
     @Override
-    public void send() throws MessagingException {
-
-        try {
-
+    public void send() throws MessagingException,NoSuchAlgorithmException,  NoSuchProviderException, SMIMEException {
             MimeBodyPart bodyPartToSign = new MimeBodyPart();
-
             bodyPartToSign.setContent(multipart);
-
             MimeMultipart mp = mailSigner.getGenn().generate(bodyPartToSign, "BC");
-            
             message.setContent(mp);
-
             Transport.send(message);
-
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | SMIMEException ex) {
-            Logger.getLogger(SignedEmail.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
     }
 
 }
